@@ -1,0 +1,6 @@
+.env
+# scratch screenshots from visual checks (never matches preview.png)
+ep.png
+step*.png
+sel.png
+!preview.png

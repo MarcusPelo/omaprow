@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "id": "marcuspelo.omaprow",
+  "name": "OmaProw",
+  "version": "0.1.0",
+  "author": "marcuspelo",
+  "license": "MIT",
+  "description": "Search Prowlarr indexers and grab releases (individually or in bulk), with sortable results and history.",
+  "kinds": ["bar-widget"],
+  "entryPoints": {
+    "barWidget": "Panel.qml"
+  },
+  "barWidget": {
+    "displayName": "OmaProw",
+    "description": "Search Prowlarr, filter by category, sort results, grab releases individually or in bulk, and browse history.",
+    "category": "Utilities",
+    "allowMultiple": false,
+    "defaultSection": "right",
+    "defaults": {
+      "baseUrl": "",
+      "pageSize": 100,
+      "defaultCategoryId": 0
+    },
+    "schema": [
+      {
+        "key": "baseUrl",
+        "type": "string",
+        "label": "Prowlarr base URL",
+        "description": "Fallback base URL if URL_BASE is not set in ~/.config/omaprow/.env (no trailing slash)",
+        "defaultValue": ""
+      },
+      {
+        "key": "pageSize",
+        "type": "integer",
+        "label": "Results limit",
+        "description": "Maximum number of releases requested per search",
+        "min": 10,
+        "max": 500,
+        "step": 10,
+        "defaultValue": 100
+      },
+      {
+        "key": "defaultCategoryId",
+        "type": "integer",
+        "label": "Default category ID",
+        "description": "Category pre-selected on open (0 = All, 1000 = Consoles, 2000 = Movies, 3000 = Audio, 4000 = PC, 5000 = TV, 7000 = Books)",
+        "defaultValue": 0
+      }
+    ]
+  }
+}
