@@ -10,6 +10,7 @@ An [Omarchy](https://omarchy.org/) bar widget for [Prowlarr](https://prowlarr.co
 - **Sortable results** — Age, Title, Size, Grabs, Peers, Category or Indexer, ascending or descending
 - **Grab** — one click on a release, or select several with the checkbox and use "Grab Release(s)" for a bulk grab. Grabbing pushes the release straight to whatever download client(s) you already have configured in Prowlarr — exactly what Prowlarr's own "Grab Release(s)" button does
 - **History** — Prowlarr's own event history (searches, RSS, grabs) for this instance, paginated
+- **In-panel settings** — the ⚙ button lets you set the Prowlarr base URL directly from the panel, without editing `shell.json`
 - **Keyboard-driven**: `/` focuses search, `g` grabs the current selection, `v` switches between Search and History, `r` refreshes, `esc` returns focus from the search field or closes the panel
 
 ## Requirements
@@ -35,7 +36,7 @@ omarchy plugin add https://github.com/marcuspelo/omaprow.git
    ```bash
    omarchy plugin enable marcuspelo.omaprow
    ```
-   Setting `baseUrl` via `omarchy bar set marcuspelo.omaprow baseUrl "http://your-prowlarr-host:9696"` is only needed if `URL_BASE` isn't set in `.env`.
+   Setting the base URL is only needed if `URL_BASE` isn't set in `.env` — either via `omarchy bar set marcuspelo.omaprow baseUrl "http://your-prowlarr-host:9696"`, or from the panel itself (⚙ → Prowlarr base URL → Save). Note that `omarchy plugin disable`/`enable` drops the widget's bar-layout entry, including any `baseUrl` set either way — a value in `.env` is what survives that reset.
 
 ## Security
 

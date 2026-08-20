@@ -94,6 +94,40 @@ Panel {
       root.fetchHistory()
   }
 
+  // ---- settings
+
+  property string draftBaseUrl: ""
+  property string settingsStatusText: ""
+
+  function openSettingsView() {
+    root.viewMode = "settings"
+    root.draftBaseUrl = root.baseUrl
+    root.settingsStatusText = ""
+  }
+
+  function canPersistSettings() {
+    return !!(root.bar && root.bar.shell && typeof root.bar.shell.updateEntryInline === "function")
+  }
+
+  function saveSettings() {
+    var url = String(root.draftBaseUrl || "").trim()
+    if (!url) url = root.envBaseUrl || "http://localhost:9696"
+    var next = { baseUrl: url, pageSize: root.pageSize, defaultCategoryId: root.defaultCategoryId }
+
+    root.draftBaseUrl = url
+    root.settings = next
+
+    if (root.canPersistSettings()) {
+      root.bar.shell.updateEntryInline(root.moduleName, next)
+      root.settingsStatusText = "Saved"
+    } else {
+      root.settingsStatusText = "Saved for this session only (bar unavailable)"
+    }
+
+    root.searchError = ""
+    root.historyError = ""
+  }
+
   function performSearch() {
     if (!root.apiKeyLoaded) return
     if (!root.apiKey) {
@@ -500,7 +534,7 @@ Panel {
     PanelKeyCatcher {
       id: keyCatcher
       anchors.fill: parent
-      blocked: searchField.activeFocus
+      blocked: searchField.activeFocus || baseUrlField.activeFocus
       onCloseRequested: root.close()
       onTextKey: function(t) {
         if (t === "/") { searchField.forceActiveFocus(); return }
@@ -508,9 +542,11 @@ Panel {
           if (t === "g" || t === "G") { root.grabSelected(); return }
           if (t === "r" || t === "R") { root.performSearch(); return }
           if (t === "v" || t === "V") { root.switchView("history"); return }
-        } else {
+        } else if (root.viewMode === "history") {
           if (t === "r" || t === "R") { root.fetchHistory(); return }
           if (t === "v" || t === "V") { root.switchView("search"); return }
+        } else if (root.viewMode === "settings") {
+          if (t === "v" || t === "V") { root.viewMode = "search"; return }
         }
       }
 
@@ -526,7 +562,7 @@ Panel {
           spacing: 8
 
           Text {
-            text: root.barIcon + "  " + (root.viewMode === "history" ? "History" : "OmaProw")
+            text: root.barIcon + "  " + (root.viewMode === "settings" ? "Settings" : root.viewMode === "history" ? "History" : "OmaProw")
             color: root.fg
             font.family: root.fontFamily
             font.pixelSize: Style.font.title
@@ -535,16 +571,18 @@ Panel {
           }
 
           Button {
-            text: root.viewMode === "search" ? "History" : "Search"
+            visible: root.viewMode === "search"
+            text: "History"
             foreground: root.fg
             fontFamily: root.fontFamily
             fontSize: Style.font.caption
             horizontalPadding: Style.spacing.controlPaddingX
             verticalPadding: Style.spacing.controlPaddingY
-            onClicked: root.switchView(root.viewMode === "search" ? "history" : "search")
+            onClicked: root.switchView("history")
           }
 
           Button {
+            visible: root.viewMode === "search" || root.viewMode === "history"
             text: (root.viewMode === "search" ? root.searching : root.historyLoading) ? "Refreshing…" : "Refresh"
             foreground: root.fg
             fontFamily: root.fontFamily
@@ -553,6 +591,93 @@ Panel {
             verticalPadding: Style.spacing.controlPaddingY
             active: root.viewMode === "search" ? root.searching : root.historyLoading
             onClicked: root.viewMode === "search" ? root.performSearch() : root.fetchHistory()
+          }
+
+          Button {
+            visible: root.viewMode === "search"
+            text: "⚙"
+            foreground: root.fg
+            tooltipText: "Settings"
+            fontFamily: root.fontFamily
+            fontSize: Style.font.caption
+            horizontalPadding: Style.spacing.controlPaddingX
+            verticalPadding: Style.spacing.controlPaddingY
+            onClicked: root.openSettingsView()
+          }
+
+          Button {
+            visible: root.viewMode !== "search"
+            text: "Back"
+            foreground: root.fg
+            fontFamily: root.fontFamily
+            fontSize: Style.font.caption
+            horizontalPadding: Style.spacing.controlPaddingX
+            verticalPadding: Style.spacing.controlPaddingY
+            onClicked: root.viewMode = "search"
+          }
+        }
+
+        // ---- settings view
+
+        ColumnLayout {
+          visible: root.viewMode === "settings"
+          Layout.fillWidth: true
+          spacing: Style.space(10)
+
+          Text {
+            text: "Prowlarr base URL"
+            color: root.dim
+            font.family: root.fontFamily
+            font.pixelSize: Style.font.caption
+          }
+
+          TextField {
+            id: baseUrlField
+            Layout.fillWidth: true
+            placeholderText: "http://localhost:9696"
+            foreground: root.fg
+            text: root.draftBaseUrl
+            onTextChanged: root.draftBaseUrl = text
+            Keys.onEscapePressed: keyCatcher.forceActiveFocus()
+          }
+
+          Text {
+            visible: root.settingsStatusText !== ""
+            Layout.fillWidth: true
+            text: root.settingsStatusText
+            color: root.dim
+            font.family: root.fontFamily
+            font.pixelSize: Style.font.caption
+            wrapMode: Text.WordWrap
+          }
+
+          Button {
+            text: "Save"
+            foreground: root.fg
+            accent: Color.accent
+            fontFamily: root.fontFamily
+            fontSize: Style.font.caption
+            horizontalPadding: Style.spacing.controlPaddingX
+            verticalPadding: Style.spacing.controlPaddingY
+            onClicked: root.saveSettings()
+          }
+
+          Text {
+            Layout.fillWidth: true
+            text: "The API key stays in ~/.config/omaprow/.env and is not editable here."
+            color: root.dim
+            font.family: root.fontFamily
+            font.pixelSize: Style.font.caption
+            wrapMode: Text.WordWrap
+          }
+
+          Text {
+            Layout.fillWidth: true
+            text: "Tip: disabling and re-enabling the plugin resets this field. Add URL_BASE=... to ~/.config/omaprow/.env to keep a fallback that survives that."
+            color: root.dim
+            font.family: root.fontFamily
+            font.pixelSize: Style.font.caption
+            wrapMode: Text.WordWrap
           }
         }
 
@@ -897,7 +1022,9 @@ Panel {
           Layout.topMargin: 4
           text: root.viewMode === "search"
             ? "/ search · g grab selected · v history · r refresh · esc close"
-            : "v search · r refresh · esc close"
+            : root.viewMode === "history"
+              ? "v search · r refresh · esc close"
+              : "esc close"
           color: root.dim
           font.family: root.fontFamily
           font.pixelSize: Style.font.caption
