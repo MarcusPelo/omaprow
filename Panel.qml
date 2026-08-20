@@ -413,6 +413,7 @@ Panel {
       id: label
       anchors.centerIn: parent
       text: badge.protocol
+      textFormat: Text.PlainText
       color: "#8fd694"
       font.family: root.fontFamily
       font.pixelSize: Style.font.caption - 1
@@ -826,6 +827,7 @@ Panel {
                 Text {
                   Layout.fillWidth: true
                   text: row.modelData.title
+                  textFormat: Text.PlainText
                   color: root.fg
                   font.family: root.fontFamily
                   font.pixelSize: Style.font.caption
@@ -840,6 +842,12 @@ Panel {
                 }
               }
 
+              // Release title, indexer name, and flags are chosen by whoever
+              // uploaded to the tracker, not by Prowlarr or this plugin —
+              // textFormat: Text.PlainText below keeps QML's HTML
+              // auto-detection from ever rendering that as rich text (same
+              // hardening as marcuspelo.omalink/omatv apply to
+              // scraped/server-sourced text).
               Text {
                 Layout.fillWidth: true
                 text: root.formatAge(row.modelData) + " · " + root.formatBytes(row.modelData.size)
@@ -847,6 +855,7 @@ Panel {
                   + " · " + root.categoryName(row.modelData) + " · " + row.modelData.indexer
                   + (row.modelData.indexerFlags && row.modelData.indexerFlags.length > 0
                      ? " · " + root.flagsText(row.modelData) : "")
+                textFormat: Text.PlainText
                 color: root.dim
                 font.family: root.fontFamily
                 font.pixelSize: Style.font.caption
@@ -963,6 +972,7 @@ Panel {
                 Text {
                   Layout.fillWidth: true
                   text: (modelData.data && (modelData.data.query || modelData.data.source)) || ""
+                  textFormat: Text.PlainText
                   color: root.dim
                   font.family: root.fontFamily
                   font.pixelSize: Style.font.caption
